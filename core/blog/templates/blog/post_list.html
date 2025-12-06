@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="panel panel-default mt-3">
+        <div class="panel-heading p-3">
+
+            ALL POSTS
+        </div>
+        <div class="panel-body">
+
+            <!-- display posts -->
+             {% if posts %}
+               {% for post in posts %}
+                <div class="well">
+
+                    <h2>{{ post.title }}</h2>
+                    <h5><span class="glyphicon glyphicon-time"></span> Post by {{ post.author }}, {{ post.created_at }}</h5>
+                    <h5>
+                      {% if post.category %}
+                        <span class="label label-danger">{{ post.category.name }}</span>
+                      {% endif %}
+                      {% for tag in post.tags.all %}
+                        <span class="label label-primary">{{ tag.name }}</span>
+                      {% endfor %}
+                    </h5>
+                    <p>{{ post.summary }}</p>
+                    <a href="{% url 'post-detail' post.pk %}">Read more</a>
+                    <br>
+                    
+                       <!-- post comments -->
+                        {{ post.comments.count }} Comments
+                    
+                </div>
+               {% endfor %}
+             {% else %}
+               <p>No posts available.</p>
+             {% endif %}
+        </div>
+    </div>
+{% endblock %}
