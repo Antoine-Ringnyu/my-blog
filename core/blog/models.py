@@ -1,6 +1,7 @@
 # accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.urls import reverse
 
 class User(AbstractUser):
     pass
@@ -43,6 +44,7 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+    
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -71,6 +73,7 @@ class Post(models.Model):
         self.status = 'published'
         self.save()
 
+
     # def display_tags(self):
     #     return ", ".join(tag.name for tag in self.tags.all()[:3])
     # display_tags.short_description = 'Tags'
@@ -93,6 +96,10 @@ class Comment(models.Model):
     #     self.save()
     def short_content(self):
         return self.content[:50] + "..." if len(self.content) > 50 else self.content
+    
+    def get_absolute_url(self):
+        return reverse('post-detail', args=[self.post.id])
+
     
 
 # LIKES

@@ -1,22 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h4><small>RECENT POSTS</small></h4>
-      <hr>
+
       <h2>{{ post.title }}</h2>
       <h5><span class="glyphicon glyphicon-time"></span> Post by {{ post.author }}, {{ post.created_at }}.</h5>
-      <h5><span class="label label-success">{{ post.category.name }}</span></h5><br>
+      <h5><span class="label label-success">{{ post.category.name }}</span></h5>
+      <!-- check if user is the authenticated one -->
+        {% if user.is_authenticated %}
+            {% if user == post.author %}
+                <span class="label label-danger">{{ post.status }}</span>
+                <a href="{% url 'admin:blog_post_change' post.id %}"><span class="label label-warning">Edit</span></a>
+                {% if perms.blog.delete_post %}
+                    <a href="{% url 'admin:blog_post_delete' post.id %}"><span class="label label-danger">Delete</span></a>
+                {% endif %}
+            {% endif %} 
+        {% endif %}
+      <br>
       <p>{{ post.content }}</p>
       <hr>
 
-      <h4>Leave a Comment:</h4>
-      <form role="form">
-        <div class="form-group">
-          <textarea class="form-control" rows="3" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-success">Submit</button>
-      </form>
-      <br><br>
+      <!-- Comment Form -->
+    <h3>Leave a Comment</h3>
+
+    {% if user.is_authenticated %}
+        <form action="{% url 'add_comment' post.id %}" method="POST" class="mb-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Submit Comment</button>
+        </form>
+    {% else %}
+        <p>You must <a href="{% url 'login' %}">login</a> to comment.</p>
+    {% endif %}
+
+    <hr>
       
       <p><span class="badge">{{ post.comments.count }}</span> Comments:</p><br>
       
@@ -29,6 +45,11 @@
             <div class="col-sm-10">
                 <h4>{{ comment.author }} <small>{{ comment.created_at }}</small></h4>
                 <p>{{ comment.content }}</p>
+                {% if user.is_authenticated %}
+                    {% if user == comment.author %}
+                        <a href="{% url 'edit_comment' comment.id %}"><span class="label label-warning">Edit</span></a>
+                    {% endif %}
+                {% endif %}
                 <br>
             </div>
              {% endfor %}

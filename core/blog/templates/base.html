@@ -37,14 +37,22 @@
              />
             </div>
                 <h4>{{ user.username }}'s Blog</h4>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit">Log Out</button>
+                </form>
+
             {% else %}
                 <h4>My Blog</h4>
+                <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
             {% endif %}
             <ul class="nav nav-pills nav-stacked">
                 <li class="active"><a href="{% url 'index' %}">Home</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'user-posts' %}">My Posts</a></li>
+                {% endif %}
                 <!-- all posts -->
                 <li><a href="{% url 'posts' %}">All Posts</a></li>
-                <li><a href="#section2">Friends</a></li>
                 <li><a href="#section3">Family</a></li>
                 <li><a href="#section3">Photos</a></li>
             </ul><br>
