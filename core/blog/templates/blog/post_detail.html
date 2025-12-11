@@ -47,7 +47,7 @@
                 <p>{{ comment.content }}</p>
                 {% if user.is_authenticated %}
                     {% if user == comment.author %}
-                        <a href="{% url 'edit_comment' comment.id %}"><span class="label label-warning">Edit</span></a>
+                        <a href="#"><span class="label label-warning">Edit</span></a>
                     {% endif %}
                 {% endif %}
                 <br>

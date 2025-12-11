@@ -48,7 +48,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('post_detail', args=[str(self.id)])
+        return reverse('post-detail', args=[str(self.id)])
 
     def is_published(self):
         return self.status == 'published'
@@ -99,6 +99,12 @@ class Comment(models.Model):
     
     def get_absolute_url(self):
         return reverse('post-detail', args=[self.post.id])
+    
+    # order by created-at
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'comment'
+        verbose_name_plural = 'comments'
 
     
 

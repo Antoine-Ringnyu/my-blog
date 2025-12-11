@@ -104,10 +104,10 @@ def add_comment(request, post_id):
 
 
 # update commment (generic view)
-class CommentUpdateView(generic.UpdateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = 'blog/post_detail.html'
+# class CommentUpdateView(generic.UpdateView):
+#     model = Comment
+#     form_class = CommentForm
+#     template_name = 'blog/post_detail.html'
 
-    def get_success_url(self):
-        return self.object.post.get_absolute_url()
+#     def get_success_url(self):
+#         return self.object.post.get_absolute_url()

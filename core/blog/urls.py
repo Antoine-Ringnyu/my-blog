@@ -11,5 +11,5 @@ urlpatterns = [
 
 urlpatterns += [
     path('posts/<int:post_id>/add_comment/', views.add_comment, name='add_comment'),
-    path('comments/<int:pk>/edit/', views.CommentUpdateView.as_view(), name='edit_comment'),
+    # path('posts/<int:post_id>/comments/<int:pk>/edit_comment/', views.CommentUpdateView.as_view(), name='edit_comment'),
 ]
