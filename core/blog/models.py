@@ -37,6 +37,7 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag, related_name='posts', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_verified = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=[
         ('draft', 'Draft'),
         ('published', 'Published')
@@ -73,10 +74,24 @@ class Post(models.Model):
         self.status = 'published'
         self.save()
 
+    def set_as_verified(self, verified=True):
+        self.status = 'published'
+        self.is_verified = verified
+        self.save()
 
+    def is_verified(self):
+        return self.is_verified
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'post'
+        verbose_name_plural = 'posts'
+        permissions = [
+            ('can_verify_post', 'Can verify post'),
+        ]
     # def display_tags(self):
     #     return ", ".join(tag.name for tag in self.tags.all()[:3])
-    # display_tags.short_description = 'Tags'
+    # display_tags.short_description = 'Tags'<|fim_middle|><|fim_middle|><|fim_middle|>
     
 
 

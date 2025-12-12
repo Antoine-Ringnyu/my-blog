@@ -9,9 +9,9 @@
         {% if user.is_authenticated %}
             {% if user == post.author %}
                 <span class="label label-danger">{{ post.status }}</span>
-                <a href="{% url 'admin:blog_post_change' post.id %}"><span class="label label-warning">Edit</span></a>
+                <a href="{% url 'post-edit' post.id %}"><span class="label label-warning">Edit</span></a>
                 {% if perms.blog.delete_post %}
-                    <a href="{% url 'admin:blog_post_delete' post.id %}"><span class="label label-danger">Delete</span></a>
+                    <a href="{% url 'post-delete' post.id %}"><span class="label label-danger">Delete</span></a>
                 {% endif %}
             {% endif %} 
         {% endif %}

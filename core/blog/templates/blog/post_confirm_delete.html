@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Delete Post: {{ post }}</h1>
+
+{% if post.comments.all %}
+
+<p>You can't delete this post until all their comments have been deleted:</p>
+<ul>
+  {% for comment in post.comments.all %}
+    <li><a href="#">{{comment}}</a></li>
+  {% endfor %}
+</ul>
+
+{% else %}
+<p>Are you sure you want to delete the post?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Yes, delete.">
+</form>
+{% endif %}
+
+{% endblock %}
