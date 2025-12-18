@@ -37,6 +37,7 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag, related_name='posts', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_verified = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=[
         ('draft', 'Draft'),
         ('published', 'Published')
@@ -48,7 +49,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('post_detail', args=[str(self.id)])
+        return reverse('post-detail', args=[str(self.id)])
 
     def is_published(self):
         return self.status == 'published'
@@ -73,10 +74,24 @@ class Post(models.Model):
         self.status = 'published'
         self.save()
 
+    def set_as_verified(self, verified=True):
+        self.status = 'published'
+        self.is_verified = verified
+        self.save()
 
+    def is_verified(self):
+        return self.is_verified
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'post'
+        verbose_name_plural = 'posts'
+        permissions = [
+            ('can_verify_post', 'Can verify post'),
+        ]
     # def display_tags(self):
     #     return ", ".join(tag.name for tag in self.tags.all()[:3])
-    # display_tags.short_description = 'Tags'
+    # display_tags.short_description = 'Tags'<|fim_middle|><|fim_middle|><|fim_middle|>
     
 
 
@@ -99,6 +114,12 @@ class Comment(models.Model):
     
     def get_absolute_url(self):
         return reverse('post-detail', args=[self.post.id])
+    
+    # order by created-at
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'comment'
+        verbose_name_plural = 'comments'
 
     
 

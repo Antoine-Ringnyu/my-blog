@@ -1,5 +1,6 @@
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from .models import Post, Comment
 from .forms import CommentForm
 from django.views import generic
@@ -72,7 +73,44 @@ def user_posts(request):
 
     return render(request, 'blog/user_posts.html', context)
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+class PostCreateView(LoginRequiredMixin, generic.CreateView):
+    model = Post
+    fields = ['title', 'content', 'featured_image', 'category', 'tags', 'status']
+    # template_name = 'blog/post_form.html'
+    redirect_field_name = 'next'     # Keeps track of where to return after login
+    success_url = '/'  # Redirect to home page after creation
 
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
+    model = Post
+    fields = ['title', 'content', 'featured_image', 'category', 'tags', 'status']
+    # template_name = 'blog/post_form.html'
+
+    # check if the user is the author of the post
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+class PostDeleteView( generic.DeleteView):
+    model = Post
+    # template_name = 'blog/post_confirm_delete.html'
+    success_url = '/'  # Redirect to home page after deletion
+
+    def form_invalid(self, form):
+        try:
+            self.object.delete()
+            return redirect(self.success_url)
+        except Exception as e:
+            return HttpResponseRedirect(
+                reverse('post-delete', kwargs={'pk': self.object.pk})
+            )
+    
 
 
 # ################################################################
@@ -104,10 +142,10 @@ def add_comment(request, post_id):
 
 
 # update commment (generic view)
-class CommentUpdateView(generic.UpdateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = 'blog/post_detail.html'
+# class CommentUpdateView(generic.UpdateView):
+#     model = Comment
+#     form_class = CommentForm
+#     template_name = 'blog/post_detail.html'
 
-    def get_success_url(self):
-        return self.object.post.get_absolute_url()
+#     def get_success_url(self):
+#         return self.object.post.get_absolute_url()
