@@ -1,0 +1,201 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Dashboard - A. Blog{% endblock title %}
+
+{% block main_content %}
+    <div class="row">
+                <div class="col-md-6 col-xl-3 mb-4">
+                  <div class="card shadow bg-primary text-white border-0">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary-light">
+                            <i class="fe fe-16 fe-shopping-bag text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col pr-0">
+                          <p class="small text-muted mb-0">Total posts</p>
+                          <span class="h3 mb-0 text-white">{{ total_posts }}</span>
+                         
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-3 mb-4">
+                  <div class="card shadow border-0">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-shopping-cart text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col pr-0">
+                          <p class="small text-muted mb-0">Published posts</p>
+                          <span class="h3 mb-0">{{ published_posts }}</span>
+                          
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-3 mb-4">
+                  <div class="card shadow border-0">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-shopping-cart text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col pr-0">
+                          <p class="small text-muted mb-0">Drafts</p>
+                          <span class="h3 mb-0">{{ draft_posts }}</span>
+                          
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xl-3 mb-4">
+                  <div class="card shadow border-0">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-3 text-center">
+                          <span class="circle circle-sm bg-primary">
+                            <i class="fe fe-16 fe-activity text-white mb-0"></i>
+                          </span>
+                        </div>
+                        <div class="col">
+                          <p class="small text-muted mb-0">Verified </p>
+                          <span class="h3 mb-0">{{ verified_posts }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+    </div>
+      
+
+    <!-- table of posts and post information -->
+     <div class="row">
+                <!-- Striped rows -->
+                <div class="col-md-12 my-4">
+                  <h2 class="h4 mb-1">Posts</h2>
+                  <p class="mb-4">Post and informations</p>
+                  <div class="card shadow">
+                    <div class="card-body">
+                      <div class="toolbar row mb-3">
+                        <div class="col">
+                          <form class="form-inline">
+                            <div class="form-row">
+                              <div class="form-group col-auto">
+                                <label for="search" class="sr-only">Search</label>
+                                <input type="text" class="form-control" id="search" value="" placeholder="Search">
+                              </div>
+                              <div class="form-group col-auto ml-3">
+                                <label class="my-1 mr-2 sr-only" for="inlineFormCustomSelectPref">Status</label>
+                                <select class="custom-select my-1 mr-sm-2" id="inlineFormCustomSelectPref">
+                                  <option selected>Choose...</option>
+                                  <option value="1">Drafts</option>
+                                  <option value="2">Published</option>
+                                  <option value="3">Verified</option>
+                                  <option value="3">All</option>
+                                </select>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="col ml-auto">
+                          <div class="dropdown float-right">
+                            <button class="btn btn-primary float-right ml-3"   type="button">
+                              <a href="{% url 'post-create' %}"> Add post</a>
+                            </button>
+                            <!-- <button class="btn btn-secondary dropdown-toggle" type="button" id="actionMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Action </button> -->
+                            <!-- <div class="dropdown-menu" aria-labelledby="actionMenuButton"> -->
+                              <!-- <a class="dropdown-item" href="#">Export</a> -->
+                              <!-- <a class="dropdown-item" href="#">Delete</a> -->
+                              
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- table -->
+                      <table class="table table-bordered">
+                        <thead>
+                          
+                          <tr role="row">
+                            <!-- <th>
+                              <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="all">
+                                <label class="custom-control-label" for="all"></label>
+                              </div>
+                            </th> -->
+                            
+                            <th>Post</th>
+                            <th>Status</th>
+                            <th>Category</th>
+                            <th>Verified</th>
+                            <th>Created At</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>
+                        {% for post in posts %}
+                          <tr>
+                            <!-- <td>
+                              <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="4574">
+                                <label class="custom-control-label" for="4574"></label>
+                              </div>
+                            </td> -->
+                            <td><a class="" href="{% url 'post-edit' post.id %}">{{post.title}}</a></td>
+                            <td>{{post.status}}</td>
+                            <td>{{post.category}}</td>
+                            <td>{% if post.is_verified %}✅{% else %}❌{% endif %}</td>
+                            <td>{{post.created_at}}</td>
+                            
+                            <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="text-muted sr-only">Action</span>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-right">
+                                <!-- for unverified posts -->
+                                {% if not post.is_verified %}
+                                  <a class="dropdown-item" href="#">Submit for Review</a>
+                                  {% else %}
+                                  <!-- for verified but drafted posts -->
+                                  {% if not post.is_published %}
+                                    <a class="dropdown-item" href="{% url 'verify_post' post.id %}">Publish</a>
+                                  {% else %}
+                                    <!-- for published posts -->
+                                    <a class="dropdown-item" href="#">Unpublish</a>
+                                  {% endif %}
+                                  
+                                {% endif %}
+                                <a class="dropdown-item" href="{% url 'post-detail' post.id %}">View</a>
+                                <a class="dropdown-item" href="{% url 'post-edit' post.id %}">Edit</a>
+                                <a class="dropdown-item" href="{% url 'post-delete' post.id %}">Delete</a>
+                              </div>
+                            </td>
+                          </tr>
+                          
+                        {% endfor %} 
+                        </tbody>
+                      </table>
+                      <nav aria-label="Table Paging" class="mb-0 text-muted">
+                        <ul class="pagination justify-content-end mb-0">
+                          <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                          <li class="page-item"><a class="page-link" href="#">1</a></li>
+                          <li class="page-item"><a class="page-link" href="#">2</a></li>
+                          <li class="page-item"><a class="page-link" href="#">3</a></li>
+                          <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
+                </div> <!-- simple table -->
+    </div> <!-- end section -->
+{% endblock main_content %}

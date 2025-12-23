@@ -1,11 +1,24 @@
-{% extends "base.html" %}
+{% extends "base_dashboard.html" %}
 
-{% block content %}
-<form action="" method="post">
-  {% csrf_token %}
-  <table>
-    {{ form.as_table }}
-  </table>
-  <input type="submit" value="Submit" />
-</form>
-{% endblock %}
+{% block main_content %}
+<div class="row">
+  <!-- Striped rows -->
+  <div class="col-md-12 my-4">
+    <h2 class="h4 mb-1">Posts</h2>
+    <p class="mb-4">Create / update posts</p>
+    <div class="card shadow">
+      <div class="card-body">
+
+        <form action="" method="post">
+          {% csrf_token %}
+          <table>
+            {{ form.as_table }}
+          </table>
+          <!-- <input type="hidden" name="next" value="{{ request.path }}"> -->
+          <input type="submit" value="Submit" />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

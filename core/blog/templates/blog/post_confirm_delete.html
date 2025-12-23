@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base_dashboard.html" %}
 
-{% block content %}
+{% block main_content %}
 
 <h1>Delete Post: {{ post }}</h1>
 
@@ -18,8 +18,11 @@
 
 <form action="" method="POST">
   {% csrf_token %}
-  <input type="submit" action="" value="Yes, delete.">
+
+  <!-- <input type="hidden" name="next" value="{{ request.GET.next }}"> -->
+  <button type="submit">Submit</button>
 </form>
 {% endif %}
 
 {% endblock %}
+

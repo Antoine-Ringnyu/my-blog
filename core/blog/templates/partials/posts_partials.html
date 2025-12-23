@@ -1,5 +1,19 @@
 <div class="well">
+                    <div>
+                      {% if user.is_authenticated %}
+                        {% if post.verified %}
+                          <span class="label label-success">Verified</span>
+                        {% else %}
+                          <span class="label label-default">Unverified</span>
+                        {% endif %}
+                        {% if user.is_staff and not post.verified %}
+                            <a href="{% url 'verify_post' post.id %}" class="btn btn-success">
+                                Verify Post
+                            </a>
+                        {% endif %}
 
+                      {% endif %}
+                    </div>
                     <h2>{{ post.title }}</h2>
                     <h5><span class="glyphicon glyphicon-time"></span> Post by {{ post.author }}, {{ post.created_at }}</h5>
                     <h5>

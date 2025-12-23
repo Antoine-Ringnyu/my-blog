@@ -1,0 +1,17 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Delete Group{% endblock title %}
+
+{% block main_content %}
+<form method="post">
+    {% csrf_token %}
+    <p>Are you sure you want to delete the Group "{{ object }}"?</p>
+    {{ form }}
+    
+    <!-- cancel -->
+    <a href="{% url 'group-list' %}">Cancel</a>
+    <input type="submit" value="Confirm">
+</form>
+{% endblock main_content %}
+
+

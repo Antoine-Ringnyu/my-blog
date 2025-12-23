@@ -28,8 +28,11 @@ class PostAdmin(admin.ModelAdmin):
             ('Category & Tags', {
                 'fields': ('category', 'tags',)
             }),
+            ('Verify post', {
+                'fields': ('verified',)
+            }),
         )
-    list_display = ('title', 'author', 'status','category', 'created_at')
+    list_display = ('title', 'author', 'status','verified','category', 'created_at')
     list_filter = ('status', 'created_at', 'category')
     search_fields = ('title', 'content')
     

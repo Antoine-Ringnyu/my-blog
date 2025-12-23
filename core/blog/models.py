@@ -37,7 +37,7 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag, related_name='posts', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_verified = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False) # New field to track verification status is_verified
     status = models.CharField(max_length=20, choices=[
         ('draft', 'Draft'),
         ('published', 'Published')
@@ -74,13 +74,13 @@ class Post(models.Model):
         self.status = 'published'
         self.save()
 
-    def set_as_verified(self, verified=True):
+    def set_as_verified(self):
         self.status = 'published'
-        self.is_verified = verified
+        self.verified = True
         self.save()
 
     def is_verified(self):
-        return self.is_verified
+        return self.verified
     
     class Meta:
         ordering = ['-created_at']

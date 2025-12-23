@@ -1,0 +1,15 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Dashboard - create groou{% endblock title %}
+
+{% block main_content %}
+  <div class="container mt-5">
+    <h2>Create New Group</h2>
+    <form method="post" >
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Create Group</button>
+    </form>
+  </div>
+{% endblock main_content %}
