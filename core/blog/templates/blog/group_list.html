@@ -8,14 +8,14 @@
         <h2 class="h5 page-title">Groups</h2>
         </div>
         <div class="col-auto">
-            <a href="{% url 'group-create' %}" class="btn btn-primary btn-sm">Add Group</a>
+            <a href="{% url 'blog:group-create' %}" class="btn btn-primary btn-sm">Add Group</a>
         </div>
     </div>
 
     <div class="row">
         {% for group in groups %}
                 <div class="col-md-6 col-xl-3 mb-4">
-                  <div class="card shadow bg-light text-white border-0">
+                  <div class="card shadow bg-light text-white border-4">
                     <div class="card-body">
                       <div class="row align-items-center">
 
@@ -30,8 +30,8 @@
                          
                         </div>
                         <div class="col-auto">
-                            <a class="text-" href="{% url 'group-edit' group.pk %}">Edit</a> |
-                            <a href="{% url 'group-delete' group.pk %}">Delete</a>
+                            <a class="text-" href="{% url 'blog:group-edit' group.pk %}">Edit</a> |
+                            <a href="{% url 'blog:group-delete' group.pk %}">Delete</a>
                         </div>
                       </div>
                     </div>

@@ -8,7 +8,7 @@
                      {% if page_obj %}
                      {% for post in page_obj %}
                     <div class="post-preview">
-                        <a href="{% url 'post-detail' post.id %}">
+                        <a href="{% url 'blog:post-detail' post.id %}">
                             <h2 class="post-title">{{ post.title }}</h2>
                             <h3 class="post-subtitle">{{ post.summary }}</h3>
                         </a>

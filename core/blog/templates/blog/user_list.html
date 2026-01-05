@@ -1,0 +1,123 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% block main_content %}
+    <!-- header -->
+     <div class="row align-items-center my-4">
+        <div class="col">
+            <h2 class="h3 mb-0 page-title">Users</h2>
+        </div>
+        <div class="col-auto">
+            <!-- <button type="button" class="btn btn-secondary"><span class="fe fe-trash fe-12 mr-2"></span>Delete</button> -->
+            <!-- <button type="button" href="{% url 'blog:user-create' %}" class="btn btn-primary"><span class="fe fe-filter fe-12 mr-2"></span>Create</button> -->
+            <a href="{% url 'blog:user-create' %}" class="btn btn-primary btn "><span class="fe fe-filter fe-12 mr-2"></span>Create</a>
+        </div>
+    </div>
+    <!-- table -->
+              <div class="card shadow">
+                <div class="card-body">
+                  <table class="table table-borderless table-hover">
+                    <thead>
+                      <tr>
+                        <!-- <th>
+                          <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="all2">
+                            <label class="custom-control-label" for="all2"></label>
+                          </div>
+                        </th> -->
+                        <!-- <th>ID</th> -->
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Group</th>
+                        <th>Create</th>
+                        <th>Staff status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                      <tr>
+                        <!-- <td>
+                          <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="2474">
+                            <label class="custom-control-label" for="2474"></label>
+                          </div>
+                        </td> -->
+                        <!-- <td>
+                          <div class="avatar avatar-sm">
+                            <img src="{% static './assets/avatars/face-3.jpg' %}" alt="..." class="avatar-img rounded-circle">
+                          </div>
+                        </td> -->
+                        
+                        <td>
+                          <p class="mb-0 text-muted">
+                            <strong>
+                            <a href="{% url 'blog:user-profile' user.pk %}" class="text-muted">
+                              {{ user.username }}
+                            </a>
+                            </strong>
+                          </p>
+                          <!-- <small class="mb-0 text-muted">Ap #331-7123 Lobortis Avenue</small> -->
+                        </td>
+                        <td>
+                          <p class="mb-0 text-muted"><strong>
+                            <a href="{% url 'blog:user-profile' user.pk %}" class="text-muted">{{ user.first_name }} {{ user.last_name }}</a>
+                            </strong></p>
+                          <!-- <small class="mb-0 text-muted">{{ user.id }}</small> -->
+                        </td>
+                        <td>
+                          <p class="mb-0 text-muted"><a href="#" class="text-muted">{{ user.email }}</a></p>
+                          <!-- <small class="mb-0 text-muted">Nigeria</small> -->
+                        </td>
+                        <td class="text-muted">
+                          {% for group in user.groups.all %}
+                            {{ group.name }}{% if not forloop.last %}, {% endif %}
+                          {% empty %}
+                            No Group
+                          {% endfor %}
+                        <td class="text-muted">{{ user.date_joined }}</td>
+                        <td class="text-muted">
+                          {% if user.is_staff %}
+                            Yes
+                          {% else %}
+                            No
+                          {% endif %}
+                        <td><button class="btn btn-sm dropdown-toggle more-horizontal" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="text-muted sr-only">Action</span>
+                          </button>
+                          <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="{% url 'blog:user-update' user.pk %}">Edit</a>
+                            <a class="dropdown-item" href="{% url 'blog:user-delete' user.pk %}">Remove</a>
+                            <a class="dropdown-item" href="{% url 'blog:user-profile' user.pk %}">Profile</a>
+                          </div>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- pagination -->
+                {% block pagination %}
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Table Paging" class="mt-2 text-muted">
+                            <ul class="pagination justify-content-end mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% else %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% endblock pagination %}
+
+{% endblock main_content %}

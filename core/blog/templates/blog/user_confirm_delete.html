@@ -1,15 +1,15 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Delete Group{% endblock title %}
+{% block title %}Delete User{% endblock title %}
 
 {% block main_content %}
 <form method="post">
     {% csrf_token %}
-    <p>Are you sure you want to delete the Group "{{ object }}"?</p>
+    <p>Are you sure you want to delete the User "{{ object }}"?</p>
     {{ form }}
     
     <!-- cancel -->
-    <a href="{% url 'blog:group-list' %}">Cancel</a>
+    <a href="{% url 'blog:user-list' %}">Cancel</a>
     <input type="submit" value="Confirm">
 </form>
 {% endblock main_content %}

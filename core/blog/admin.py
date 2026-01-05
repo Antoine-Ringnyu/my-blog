@@ -1,12 +1,13 @@
 # from xml.etree.ElementTree import Comment
 from django.contrib import admin
 
+
 # Register your models here.
 
-from .models import Like, User, Category, Tag, Post, Comment
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff')
+from .models import Like, Category, Tag, Post, Comment
+# @admin.register()
+# class UserAdmin(admin.ModelAdmin):
+    # list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff')
     # fields = ['username', 'email', 'first_name', 'last_name', 'date_joined', ('is_staff', 'is_active',)]
 
 @admin.register(Category)

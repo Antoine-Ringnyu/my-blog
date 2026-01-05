@@ -1,13 +1,7 @@
 # accounts/models.py
-from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
-
-class User(AbstractUser):
-    pass
-    
-    def __str__(self):
-        return self.username
 
 
 
@@ -29,7 +23,7 @@ class Tag(models.Model):
 
 # POST
 class Post(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = models.TextField()
     featured_image = models.ImageField(upload_to='post_images/', null=True, blank=True)
@@ -38,6 +32,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     verified = models.BooleanField(default=False) # New field to track verification status is_verified
+    submitted_for_verification = models.BooleanField(default=False) # New field to track if submitted for verification
     status = models.CharField(max_length=20, choices=[
         ('draft', 'Draft'),
         ('published', 'Published')
@@ -49,7 +44,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('post-detail', args=[str(self.id)])
+        return reverse('blog:post-detail', args=[str(self.id)])
 
     def is_published(self):
         return self.status == 'published'
@@ -70,17 +65,42 @@ class Post(models.Model):
     def get_previous(self):
         return Post.objects.filter(id__lt=self.id).order_by('-id').first()
 
+    # def publish(self):
+    #     # check if the post was submitted for verification and is verified
+    #     if self.is_submitted_for_verification() and self.is_verified():
+    #         self.status = 'published'
+    #         self.save()
+    #     else:
+    #         raise Exception("Post must be verified before publishing.")
+
     def publish(self):
-        self.status = 'published'
+        if self.status == 'draft':
+            if not (self.is_submitted_for_verification() and self.is_verified()):
+                raise ValueError("Post must be submitted for verification and verified before publishing.")
+            self.status = 'published'
+
+        elif self.status == 'published':
+            self.status = 'draft' 
+
         self.save()
 
+
     def set_as_verified(self):
-        self.status = 'published'
+        # check if the post is submitted for verification
+        if not self.is_submitted_for_verification():
+            raise ValueError("Post must be submitted for verification before it can be verified.") 
         self.verified = True
+        self.save()
+
+    def set_as_submitted_for_verification(self):
+        self.submitted_for_verification = True
         self.save()
 
     def is_verified(self):
         return self.verified
+    
+    def is_submitted_for_verification(self):
+        return self.submitted_for_verification
     
     class Meta:
         ordering = ['-created_at']
@@ -98,7 +118,7 @@ class Post(models.Model):
 # COMMENT
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     # approved = models.BooleanField(default=False)
@@ -113,7 +133,7 @@ class Comment(models.Model):
         return self.content[:50] + "..." if len(self.content) > 50 else self.content
     
     def get_absolute_url(self):
-        return reverse('post-detail', args=[self.post.id])
+        return reverse('blog:post-detail', args=[self.post.id])
     
     # order by created-at
     class Meta:
@@ -126,7 +146,7 @@ class Comment(models.Model):
 # LIKES
 class Like(models.Model):
     post = models.ForeignKey(Post, related_name='likes', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, related_name='likes', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

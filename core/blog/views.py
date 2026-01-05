@@ -1,10 +1,11 @@
 from multiprocessing import context
 from urllib import response
+from django.conf import settings
 from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from .models import Post, Comment
-from .forms import CommentForm, CustomLoginForm, GroupForm, PostForm
+from .forms import CommentForm, CustomLoginForm, CustomUserChangeForm, CustomUserCreationForm, GroupForm, PostForm
 from django.views import generic
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, permission_required
@@ -23,7 +24,7 @@ def index(request):
     ).order_by('-created_at')
 
 
-    paginator = Paginator(posts, 3)  # Show 1 post per page
+    paginator = Paginator(posts, 5)  # Show 5 posts per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -37,7 +38,147 @@ def index(request):
     return render(request, 'blog/index.html', context)
 
 
+def admin(request):
+    
+
+    # create context dictionary to pass to template
+    context = {
+        
+    }
+
+    return render(request, 'blog/admin.html', context)
+
 # ###############################################################
+# USERS 
+# ###############################################################
+from django.contrib.auth import get_user_model
+from django.views import generic
+User = get_user_model()
+
+class UserListView(generic.ListView):
+    model = User
+    template_name = 'blog/user_list.html'
+    context_object_name = 'users'
+    paginate_by = 10
+
+    # additional context
+    def get_context_data(self, **kwargs):
+        # add groups to context
+        
+        context = super().get_context_data(**kwargs)
+        context['groups'] = Group.objects.all()
+        return context
+
+from django.views.generic import DetailView
+from django.views.generic.list import MultipleObjectMixin
+from .models import Post
+
+
+
+from django.views.generic import DetailView
+from django.views.generic.list import MultipleObjectMixin
+from django.contrib.auth.models import User
+from .models import Post
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
+class UserProfileView(LoginRequiredMixin, DetailView, MultipleObjectMixin):
+    model = User
+    template_name = 'blog/user_profile.html'
+    context_object_name = 'profile_user'
+    paginate_by = 10  # posts per page
+
+    def get_context_data(self, **kwargs):
+        profile_user = self.get_object()
+
+        posts = Post.objects.filter(author=profile_user).order_by('-created_at')
+
+        # Only show published posts to other users
+        if self.request.user != profile_user:
+            posts = posts.filter(status='published')
+
+        # only show verified posts to members who are not the author
+        # if not self.request.user.is_staff and self.request.user != profile_user:
+        #     posts = posts.filter(verified=True)
+
+        context = super().get_context_data(object_list=posts, **kwargs)
+        context['groups'] = Group.objects.all()
+        return context
+    
+
+# create user view
+# from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+
+class UserCreateView(generic.CreateView):
+    model = User
+    form_class = CustomUserCreationForm
+    template_name = 'blog/user_form.html'
+    success_url = reverse_lazy('blog:user-list')
+
+
+
+# edit the user view
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+    model = User
+    form_class = CustomUserChangeForm
+    template_name = 'blog/user_form.html'
+    success_url = reverse_lazy('blog:user-list')
+
+    def test_func(self):
+        user = self.get_object()
+        return self.request.user == user or self.request.user.is_staff
+
+# delete user view
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse_lazy
+class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+    model = User
+    template_name = 'blog/user_confirm_delete.html'
+    success_url = reverse_lazy('blog:user-list')
+
+    def test_func(self):
+        user = self.get_object()
+        return self.request.user == user or self.request.user.is_staff
+    
+# assign user to group
+from django.contrib.auth.models import Group
+# def assign_user_to_group(user, group_name):
+#     try:
+#         group = Group.objects.get(name=group_name)
+#     except Group.DoesNotExist:
+#         pass
+    
+#     try:
+#         User.objects.get(pk=user.pk)
+#     except User.DoesNotExist:
+#         pass
+
+#     if user and group:  
+#         user.groups.add(group)
+#         return redirect('blog:user-list')
+
+
+from django.contrib.auth.models import Group
+from django.shortcuts import redirect
+# make sure the user is signed in
+from django.contrib.auth.decorators import login_required
+@login_required
+# make sure only staff can assign users to groups
+@permission_required('auth.change_group', raise_exception=True)
+def assign_user_to_group(request, user_id):
+    # Returns 404 if user doesn't exist, preventing NoneType errors
+    user = get_object_or_404(User, pk=user_id)
+    if request.method == 'POST':
+        group_name = request.POST.get('group_name')
+
+        # Clearly separate the string name from the actual Group object
+        group_obj, created = Group.objects.get_or_create(name=group_name)
+        user.groups.clear()   # optional: single-role system
+        user.groups.add(group_obj)
+    return redirect('blog:user-profile', user.pk)
+###############################################################
 # POST 
 # ###############################################################
 class PostListView(generic.ListView):
@@ -85,7 +226,7 @@ class PostCreateView(LoginRequiredMixin, generic.CreateView):
     form_class = PostForm
     # template_name = 'blog/post_form.html'
     redirect_field_name = 'next'     # Keeps track of where to return after login
-    success_url = reverse_lazy('dashboard')
+    success_url = reverse_lazy('blog:dashboard')
     
 
     #  redirect to next if available
@@ -101,7 +242,7 @@ class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
     model = Post
     form_class = PostForm
     # template_name = 'blog/post_form.html'
-    success_url = reverse_lazy('dashboard')
+    success_url = reverse_lazy('blog:dashboard')
 
     # redirect to next if available
     # def get_success_url(self):
@@ -112,12 +253,13 @@ class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
 
-class PostDeleteView( generic.DeleteView):
+class PostDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Post
     # template_name = 'blog/post_confirm_delete.html'
-    success_url = reverse_lazy('dashboard')  # Redirect to home page after deletion
+    success_url = reverse_lazy('blog:dashboard')  # Redirect to home page after deletion
     # def get_success_url(self):
     #     return self.request.POST.get('next') or self.request.GET.get('next') or 'dashboard'
+    permission_denied_message = "You do not have permission to delete this post."
 
     def form_invalid(self, form):
         try:
@@ -125,7 +267,7 @@ class PostDeleteView( generic.DeleteView):
             return redirect(self.success_url)
         except Exception as e:
             return HttpResponseRedirect(
-                reverse('post-delete', kwargs={'pk': self.object.pk})
+                reverse('blog:post-delete', kwargs={'pk': self.object.pk})
             )
 
 
@@ -137,9 +279,28 @@ from django.shortcuts import get_object_or_404, redirect
 def verify_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     post.set_as_verified()
-    return redirect(post.get_absolute_url())
+    return redirect('blog:dashboard')
+
+from django.views.decorators.http import require_POST
+from django.http import HttpResponseForbidden
+
+@login_required
+@require_POST
+def publish_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if post.author != request.user:
+        return HttpResponseForbidden("You are not allowed to publish or unpublish this post.")
+
+    post.publish()
+    return redirect('blog:dashboard')
 
 
+def submit_post_for_verification(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    post.set_as_submitted_for_verification()
+    # redirect back to where the request came from
+    return redirect('blog:dashboard')
 
 # ################################################################
 # COMMENTS SECTION
@@ -180,37 +341,43 @@ def add_comment(request, post_id):
 
 
 # ##########################################################
-# LOGIN VIEW WITH CUSTOM FORM
-# ##########################################################
-
-from django.contrib.auth.views import LoginView
-
-class CustomLoginView(LoginView):
-    authentication_form = CustomLoginForm
-
-
-
-# ##########################################################
 # DASHBOARD VIEW
 # ##########################################################
 from django.contrib.admin.views.decorators import staff_member_required 
+from django.db.models import Q
 # @staff_member_required
 @login_required
 def dashboard(request):
-    # get all the users posts
-    posts = Post.objects.all().order_by('-created_at')
+    
 
     # get all groups
     groups = Group.objects.all()
+
+   # check if user is a staff member
+    if request.user.is_staff:
+        posts = Post.objects.filter(
+            Q(submitted_for_verification=True) | Q(author=request.user)
+        ).order_by('-created_at')
+    else:
+        posts = Post.objects.filter(author=request.user).order_by('-created_at')
+    # post that have been subnitted for verification
+    submitted_for_verification_posts = posts.filter(submitted_for_verification=True).order_by('-created_at')
+
     
-    total_posts = Post.objects.count()
+
+    total_posts = posts.count()
     # total_comments = Comment.objects.count()
-    verified_posts = Post.objects.filter(verified=True).count()
-    draft_posts = Post.objects.filter(status='draft').count()
-    published_posts = Post.objects.filter(status='published').count()
+    verified_posts = posts.filter(verified=True).count()
+    draft_posts = posts.filter(status='draft').count()
+    published_posts = posts.filter(status='published').count()
+
+    # paginate posts
+    paginator = Paginator(posts, 5)  # Show 10 posts per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'posts': posts,
+        'page_obj': page_obj,
         'total_posts': total_posts,
         # 'total_comments': total_comments,
         'verified_posts': verified_posts,
@@ -254,7 +421,9 @@ def setup_groups_and_permissions():
 # Call the setup function (you might want to call this from a management command or an admin view)
 # setup_groups_and_permissions()
 
-class GroupListView(generic.ListView):
+class GroupListView(LoginRequiredMixin, generic.ListView):
+    permission_required = 'can_change_group'
+
     model = Group
     template_name = 'blog/group_list.html'
     context_object_name = 'groups'
@@ -264,11 +433,12 @@ from django.views import generic
 from django.urls import reverse_lazy
 from collections import defaultdict
 
-class GroupCreateView(generic.CreateView):
+class GroupCreateView(LoginRequiredMixin, generic.CreateView):
+    permission_required = 'can_change_group'
     model = Group
     template_name = 'blog/group_form.html'
     form_class = GroupForm
-    success_url = reverse_lazy('group-list')
+    success_url = reverse_lazy('blog:group-list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -290,13 +460,15 @@ class GroupCreateView(generic.CreateView):
 
 
 
-class GroupUpdateView(generic.UpdateView):
+class GroupUpdateView(LoginRequiredMixin, generic.UpdateView):
+    permission_required = 'can_change_group'
     model = Group
     template_name = 'blog/group_form.html'
     form_class = GroupForm
-    success_url = reverse_lazy('group-list')
+    success_url = reverse_lazy('blog:group-list')
 
-class DeleteGroupView(generic.DeleteView):
+class DeleteGroupView(LoginRequiredMixin, generic.DeleteView):
+    permission_required = 'can_change_group'
     model = Group
     template_name = 'blog/group_confirm_delete.html'
-    success_url = reverse_lazy('group-list')  # Redirect to home page after deletion
+    success_url = reverse_lazy('blog:group-list')  # Redirect to home page after deletion

@@ -19,7 +19,7 @@
 <form action="" method="POST">
   {% csrf_token %}
 
-  <!-- <input type="hidden" name="next" value="{{ request.GET.next }}"> -->
+  <input type="hidden" name="next" value="{{ request.GET.next }}">
   <button type="submit">Submit</button>
 </form>
 {% endif %}

@@ -1,0 +1,246 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Profile{% endblock title %}
+
+{% block main_content %}
+      
+              <h2 class="h3 mb-4 page-title">Profile</h2>
+              <div class="row mt-5 align-items-center">
+                <div class="col-md-3 text-center mb-5">
+                  <div class="avatar avatar-xl">
+                    <img src="{% static 'blog/./assets/avatars/face-1.jpg' %}" alt="..." class="avatar-img rounded-circle">
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="row align-items-center">
+                    <div class="col-md-7">
+                      <h4 class="mb-1">{{ profile_user.get_full_name }}</h4>
+                      {% if profile_user.is_superuser %}
+                        <span class="badge badge-danger">Superuser</span>
+                      {% endif %}
+                      {% if profile_user.is_staff %}
+                        <span class="badge badge-warning">Staff</span>
+                      {% endif %}
+
+                      <!-- User group -->
+                      {% with profile_user.groups.first as group %}
+                        {% if group %}
+                          <span class="badge badge-primary">{{ group.name|title }}</span>
+                        {% else %}
+                          <span class="text-muted">No role assigned</span>
+                        {% endif %}
+                      {% endwith %}
+
+                    </div>
+                  </div>
+                  <div class="row mb-4">
+                    <!-- <div class="col-md-7">
+                      <p class="text-muted"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris blandit nisl ullamcorper, rutrum metus in, congue lectus.
+
+                      </p>
+                    </div> -->
+                    <div class="col">
+                        <!-- email -->
+                      <p class="small mb-0 text-muted">{{ profile_user.username }}</p>
+                      <p class="small mb-0 text-muted">{{ profile_user.email }}</p>
+                      <!-- number of posts -->
+                      <!-- <p class="small mb-0 text-muted">{{ profile_user.posts.count }}</p> -->
+                      <!-- only show this button for owner -->
+                      {% if request.user == profile_user %}
+                        <a class="btn btn-primary btn-sm mt-3" href="{% url 'blog:user-update' profile_user.pk %}">Edit Profile</a>  
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- assign role to user, only show to staff -->
+              {% if request.user.is_staff %}
+                <div class="row mb-4">
+                  <div class="col-md-7">
+                    <form method="post"
+                          action="{% url 'blog:assign_user_to_group' profile_user.id %}">
+                      {% csrf_token %}
+
+                      <label class="small text-muted">Assign role</label>
+                      <select name="group_name" class="form-control mb-2" required>
+                        
+                        <!-- <option value="editors">Editors</option> -->
+                         <!-- default value is the current user group -->
+                          
+                        {% for group in groups %}
+                          <option value="{{ group.name }}">{{ group.name }}</option>
+                        {% endfor %}
+                      </select>
+
+                      <button type="submit" class="btn btn-secondary btn-sm">
+                        Assign
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {% endif %}
+
+
+              <!-- .row-->
+              <h3>Posts</h3>
+              
+
+<div class="row">
+  <div class="col-md-12 my-4">
+    <div class="card shadow">
+      <div class="card-body">
+
+        <!-- Toolbar -->
+        <div class="toolbar row mb-3">
+          <div class="col">
+            <form class="form-inline">
+              <div class="form-row">
+                <div class="form-group col-auto">
+                  <input type="text" class="form-control" placeholder="Search">
+                </div>
+              </div>
+            </form>
+          </div>
+          <!-- only show this button for owner -->
+          {% if request.user == profile_user %}
+            <div class="col ml-auto text-right">
+                <a href="{% url 'blog:post-create' %}" class="btn btn-primary btn-sm">Add Post</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Table -->
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              {% if request.user.is_staff %}
+                <th>Author</th>
+              {% endif %}
+              <th>Post</th>
+              <th>Status</th>
+              <th>Category</th>
+              <th>Submitted</th>
+              <th>Verified</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for post in object_list %}
+            <!-- if user is a post author, show all thier-->
+
+              <tr>
+                {% if request.user.is_staff %}
+                  <td>
+                    <a href="{% url 'blog:user-profile' post.author.id %}">
+                      {{ post.author.username }}
+                    </a>
+                  </td>
+                {% endif %}
+
+                <td>
+                  <a href="{% if post.author == request.user %}
+                              {% url 'blog:post-edit' post.id %}
+                            {% else %}
+                              {% url 'blog:post-detail' post.id %}
+                            {% endif %}">
+                    {{ post.title }}
+                  </a>
+                </td>
+
+                <td>
+                  {% if post.status == 'draft' %}
+                    <span class="badge badge-warning">Draft</span>
+                  {% elif post.status == 'published' %}
+                    <span class="badge badge-success">Published</span>
+                  {% else %}
+                    <span class="badge badge-secondary">{{ post.status }}</span>
+                  {% endif %}
+                </td>
+
+                <td>{{ post.category }}</td>
+
+                <td>
+                  {% if post.is_submitted_for_verification %}
+                    <span class="badge badge-success">Yes</span>
+                  {% else %}
+                    <span class="badge badge-danger">No</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if post.is_verified %}
+                    <span class="badge badge-success">Yes</span>
+                  {% else %}
+                    <span class="badge badge-danger">No</span>
+                  {% endif %}
+                </td>
+
+                <td>{{ post.created_at|date:"M d, Y" }}</td>
+
+                <td>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown">
+                      Actions
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <a class="dropdown-item" href="{% url 'blog:post-detail' post.id %}">View</a>
+
+                      {% if post.author == request.user %}
+                        <a class="dropdown-item" href="{% url 'blog:post-edit' post.id %}">Edit</a>
+                        <a class="dropdown-item text-danger" href="{% url 'blog:post-delete' post.id %}">Delete</a>
+                      {% endif %}
+
+                      {% if request.user.is_staff and not post.is_verified and post.author != request.user %}
+                        <a class="dropdown-item" href="{% url 'blog:verify_post' post.id %}">Verify</a>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-center text-muted">
+                  This user has no posts.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+          <nav class="mt-3">
+            <ul class="pagination justify-content-end">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                  <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock main_content %}
